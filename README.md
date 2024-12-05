@@ -49,10 +49,9 @@ A simple web-based PasteBin-like application built using **Flask**, **MySQL**, *
     ```
 
 4. Create a MySQL database:
-
-  ```text
-  Run the provided SQL file to create the database schema and tables.
-  ```
+    ```
+    Run the provided SQL file to create the database schema and tables.
+    ```
 
 5. Update the `db_config` in `app.py` (required) and dbgod.py (optional):
 
