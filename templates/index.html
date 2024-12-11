@@ -30,6 +30,13 @@
                 </div>
 
                     <hr>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        <div class="alert alert-{{ messages[0][0] }}" id="flash-message">
+                        {{ messages[0][1] }}
+                        </div>
+                    {% endif %}
+                    {% endwith %}
                     <form method="POST" class="text-center">
                         <div class="mb-3">
                             <textarea name="content" class="form-control" placeholder="Paste your text here..." rows="5" required></textarea>
