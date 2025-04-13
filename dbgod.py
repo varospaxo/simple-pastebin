@@ -71,6 +71,24 @@ def delete_user(username):
         cursor.close()
         conn.close()
 
+def change_password(username, new_password):
+    """Change the password for an existing user."""
+    conn, cursor = connect_db()
+    # Check if the username exists
+    cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+    if cursor.fetchone():
+        hashed_password = generate_password_hash(new_password)
+        try:
+            cursor.execute("UPDATE users SET password = %s WHERE username = %s",
+                          (hashed_password, username))
+            conn.commit()
+            print(f"Password for user '{username}' updated successfully!")
+        except mysql.connector.Error as err:
+            print(f"Error: {err}")
+    else:
+        print(f"Error: User '{username}' does not exist!")
+    cursor.close()
+    conn.close()
 
 def view_pastes():
     """View all pastes along with the usernames of the users who made them."""
@@ -99,10 +117,9 @@ def menu():
         print("2. View all users (with hashed passwords)")
         print("3. Delete a user")
         print("4. View all pastes with usernames")
-        print("5. Exit")
-        
+        print("5. Change user password")
+        print("6. Exit")
         choice = input("Enter your choice: ")
-
         if choice == '1':
             username = input("Enter username: ")
             password = input("Enter password: ")
@@ -115,10 +132,14 @@ def menu():
         elif choice == '4':
             view_pastes()
         elif choice == '5':
+            username = input("Enter username: ")
+            new_password = input("Enter new password: ")
+            change_password(username, new_password)
+        elif choice == '6':
             print("Exiting the program.")
             break
         else:
-            print("Invalid choice. Please enter a number between 1 and 5.")
+            print("Invalid choice. Please enter a number between 1 and 6.")
 
 if __name__ == '__main__':
     menu()
