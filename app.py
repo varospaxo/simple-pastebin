@@ -89,8 +89,13 @@ def index():
     # Get sort order from the query parameter, default to DESC (newest first)
     sort_order = request.args.get('sort', 'DESC')
     
-    # Use the sort_order in the SQL query
-    cursor.execute(f"SELECT id, content, created_at FROM pastes WHERE username=%s ORDER BY created_at {sort_order}", (username,))
+    # Validate sort_order to prevent SQL injection
+    if sort_order not in ['ASC', 'DESC']:
+        sort_order = 'DESC'  # Default to DESC if invalid value is provided
+    
+    # Use parameterized query with validated sort_order
+    query = f"SELECT id, content, created_at FROM pastes WHERE username=%s ORDER BY created_at {sort_order}"
+    cursor.execute(query, (username,))
     pastes = cursor.fetchall()
     conn.close()
 
@@ -112,8 +117,13 @@ def delete_paste(paste_id):
 
     flash("Paste deleted successfully!", "success")
     
-    # Preserve the current sort order when redirecting
+    # Get sort order from the query parameter, default to DESC (newest first)
     sort_order = request.args.get('sort', 'DESC')
+    
+    # Validate sort_order to prevent SQL injection
+    if sort_order not in ['ASC', 'DESC']:
+        sort_order = 'DESC'  # Default to DESC if invalid value is provided
+    
     return redirect(url_for('index', sort=sort_order))
 
 # Route to delete all records

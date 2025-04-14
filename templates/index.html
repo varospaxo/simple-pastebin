@@ -32,7 +32,7 @@
                         <p class="text-muted mb-0">Logged in as: <strong>{{ username }}</strong></p>
                     </div>
                     <div class="col-md-3">
-                        <a href="/logout" class="btn btn-danger">Logout</a>
+                        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
                     </div>
                 </div>
 
@@ -44,12 +44,12 @@
                         </div>
                     {% endif %}
                     {% endwith %}
-                    <form method="POST" class="text-center">
+                    <form method="POST" action="{{ url_for('index') }}" class="text-center">
                         <div class="mb-3">
                             <textarea name="content" class="form-control" placeholder="Paste your text here..." rows="5" required></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">Save</button>
-                        <a href="/" class="btn btn-secondary">Refresh</a>
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">Refresh</a>
                     </form>
 
                     <hr>
@@ -65,14 +65,6 @@
             </div>
 
             <!-- Right side: Pastes -->
-             <!--            <div class="col-md-7">
-                <h3>Stored Pastes:</h3>
-                {% for paste in pastes %}
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <p class="card-text" id="paste-{{ loop.index }}">{{ paste[0] }}</p>
-                        <small class="text-muted">Posted on: {{ paste[1] }}</small>
-                        <button class="btn btn-secondary" onclick="copyToClipboard('paste-{{ loop.index }}')">Copy</button> -->
             <div class="col-md-8">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h3>Stored Pastes:</h3>
@@ -134,14 +126,14 @@
             alert("Copied to clipboard!");
         }
 
-        // Sort toggle functionality
+        // Sort toggle functionality with XSS prevention
         document.getElementById('sortToggle').addEventListener('change', function() {
             const sortOrder = this.checked ? 'ASC' : 'DESC';
             const sortLabel = document.getElementById('sortLabel');
             sortLabel.textContent = this.checked ? 'Oldest first' : 'Newest first';
             
-            // Redirect to the same page with the new sort parameter
-            window.location.href = `/?sort=${sortOrder}`;
+            // Safely redirect using url_for equivalent in JS
+            window.location.href = '/?sort=' + encodeURIComponent(sortOrder);
         });
 
         // Auto-hide flash messages after 3 seconds
