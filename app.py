@@ -86,27 +86,35 @@ def index():
         cursor.execute("INSERT INTO pastes (content, username) VALUES (%s, %s)", (content, username))
         conn.commit()
 
-    cursor.execute("SELECT content, created_at FROM pastes WHERE username=%s ORDER BY created_at DESC", (username,))
+    # Get sort order from the query parameter, default to DESC (newest first)
+    sort_order = request.args.get('sort', 'DESC')
+    
+    # Use the sort_order in the SQL query
+    cursor.execute(f"SELECT id, content, created_at FROM pastes WHERE username=%s ORDER BY created_at {sort_order}", (username,))
     pastes = cursor.fetchall()
     conn.close()
 
-    return render_template('index.html', pastes=pastes, username=username)
+    return render_template('index.html', pastes=pastes, username=username, current_sort=sort_order)
 
-# Route to delete the last record
-@app.route('/delete_last', methods=['POST'])
-def delete_last():
+# Route to delete a specific paste
+@app.route('/delete_paste/<int:paste_id>', methods=['POST'])
+def delete_paste(paste_id):
     if 'username' not in session:
         return redirect(url_for('login'))
 
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
     
-    cursor.execute("DELETE FROM pastes WHERE username=%s ORDER BY created_at DESC LIMIT 1", (session['username'],))
+    # Ensure the paste belongs to the current user before deleting
+    cursor.execute("DELETE FROM pastes WHERE id=%s AND username=%s", (paste_id, session['username']))
     conn.commit()
     conn.close()
 
-    flash("Last paste deleted successfully!", "success")
-    return redirect(url_for('index'))
+    flash("Paste deleted successfully!", "success")
+    
+    # Preserve the current sort order when redirecting
+    sort_order = request.args.get('sort', 'DESC')
+    return redirect(url_for('index', sort=sort_order))
 
 # Route to delete all records
 @app.route('/delete_all', methods=['POST'])

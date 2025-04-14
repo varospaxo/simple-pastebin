@@ -11,6 +11,13 @@
             position: sticky;
             top: 20px;
         }
+        .form-check-input:checked + .form-check-label::before {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        .sort-toggle {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -45,11 +52,6 @@
                         <a href="/" class="btn btn-secondary">Refresh</a>
                     </form>
 
-                    <form method="POST" action="{{ url_for('delete_last') }}" class="text-center mt-3">
-                        <button type="submit" class="btn btn-danger">Delete Last Record</button>
-                    </form>
-
-
                     <hr>
 
                     <h3>Clear History:</h3>
@@ -63,30 +65,40 @@
             </div>
 
             <!-- Right side: Pastes -->
-<!--            <div class="col-md-7">
+             <!--            <div class="col-md-7">
                 <h3>Stored Pastes:</h3>
                 {% for paste in pastes %}
                 <div class="card mb-3">
                     <div class="card-body">
                         <p class="card-text" id="paste-{{ loop.index }}">{{ paste[0] }}</p>
                         <small class="text-muted">Posted on: {{ paste[1] }}</small>
-                        <button class="btn btn-secondary" onclick="copyToClipboard('paste-{{ loop.index }}')">Copy</button>
+                        <button class="btn btn-secondary" onclick="copyToClipboard('paste-{{ loop.index }}')">Copy</button> -->
+            <div class="col-md-8">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3>Stored Pastes:</h3>
+                    <div class="sort-toggle">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="sortToggle" {% if current_sort == 'ASC' %}checked{% endif %}>
+                            <label class="form-check-label" for="sortToggle">
+                                Sort by: <span id="sortLabel">{% if current_sort == 'ASC' %}Oldest first{% else %}Newest first{% endif %}</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
-                {% endfor %}
-            </div> -->
-            <div class="col-md-8">
-                <h3>Stored Pastes:</h3>
+                
                 {% for paste in pastes %}
                 <div class="card mb-3">
                     <div class="card-body">
                         <div class="row justify-content-between">
-                            <div class="col-md-7">
-                                <p class="card-text" id="paste-{{ loop.index }}">{{ paste[0] }}</p>
-                                <small class="text-muted">Posted on: {{ paste[1] }}</small>
+                            <div class="col-md-9">
+                                <p class="card-text" id="paste-{{ loop.index }}">{{ paste[1] }}</p>
+                                <small class="text-muted">Posted on: {{ paste[2] }}</small>
                             </div>
-                            <div class="col-md-2 d-flex align-items-center">
-                                <button type="button" class="btn btn-secondary" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="Top popover" onclick="copyToClipboard('paste-{{ loop.index }}')">Copy</button>
+                            <div class="col-md-3 d-flex align-items-center justify-content-end">
+                                <button type="button" class="btn btn-secondary me-2" onclick="copyToClipboard('paste-{{ loop.index }}')">Copy</button>
+                                <form method="POST" action="{{ url_for('delete_paste', paste_id=paste[0], sort=current_sort) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -95,32 +107,50 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyToClipboard(pasteId) {
+            // Get the text content of the paste
+            var pasteText = document.getElementById(pasteId).innerText;
+
+            // Create a temporary textarea element
+            var tempTextArea = document.createElement("textarea");
+            tempTextArea.value = pasteText;
+
+            // Append the textarea to the document body
+            document.body.appendChild(tempTextArea);
+
+            // Select the text inside the textarea
+            tempTextArea.select();
+
+            // Copy the selected text to clipboard
+            document.execCommand('copy');
+
+            // Remove the temporary textarea from the document
+            document.body.removeChild(tempTextArea);
+
+            // Optionally, show a confirmation message
+            alert("Copied to clipboard!");
+        }
+
+        // Sort toggle functionality
+        document.getElementById('sortToggle').addEventListener('change', function() {
+            const sortOrder = this.checked ? 'ASC' : 'DESC';
+            const sortLabel = document.getElementById('sortLabel');
+            sortLabel.textContent = this.checked ? 'Oldest first' : 'Newest first';
+            
+            // Redirect to the same page with the new sort parameter
+            window.location.href = `/?sort=${sortOrder}`;
+        });
+
+        // Auto-hide flash messages after 3 seconds
+        const flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            setTimeout(function() {
+                flashMessage.style.display = 'none';
+            }, 3000);
+        }
+    </script>
 </body>
-
-<script>
-    function copyToClipboard(pasteId) {
-        // Get the text content of the paste
-        var pasteText = document.getElementById(pasteId).innerText;
-
-        // Create a temporary textarea element
-        var tempTextArea = document.createElement("textarea");
-        tempTextArea.value = pasteText;
-
-        // Append the textarea to the document body
-        document.body.appendChild(tempTextArea);
-
-        // Select the text inside the textarea
-        tempTextArea.select();
-
-        // Copy the selected text to clipboard
-        document.execCommand('copy');
-
-        // Remove the temporary textarea from the document
-        document.body.removeChild(tempTextArea);
-
-        // Optionally, show a confirmation message (can use Bootstrap alert or custom)
-        //alert("Copied to clipboard!");
-    }
-</script>
-
 </html>
